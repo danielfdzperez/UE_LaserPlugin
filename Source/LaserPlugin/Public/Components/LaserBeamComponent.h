@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ArrowComponent.h"
 #include "LaserBeamComponent.generated.h"
 
 /**
@@ -17,6 +16,9 @@ class LASERPLUGIN_API ULaserBeamComponent : public USceneComponent
 
 #pragma region Attributes	
 public:
+
+	static int32 DebugBeam;
+
 	UPROPERTY(EditAnywhere)
 		bool BeginActive = true;
 
@@ -57,12 +59,16 @@ public:
 	* @see TurnOn
 	*/
 	UFUNCTION(BlueprintCallable)
-		virtual void Shoot();
+	virtual void Shoot();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void ImpactReaction(const FVector& Origin, const FVector& End);
-	virtual void ImpactReaction_Implementation(FVector const& Origin, FVector const& End) {};
+	UFUNCTION(BlueprintNativeEvent)
+	void ImpactReaction(const FHitResult& HitInfo);
+	virtual void ImpactReaction_Implementation(const FHitResult& HitInfo) {};
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void DebugBeamAction(const FVector& source, const FVector& destination, FColor color = FColor::Red);
+	virtual void DebugBeamAction_Implementation(const FVector& source, const FVector& destination, FColor color = FColor::Red);
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

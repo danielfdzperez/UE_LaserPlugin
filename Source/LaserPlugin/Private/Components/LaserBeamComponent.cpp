@@ -5,25 +5,43 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Interfaces/HitableByLaser.h"
 
+int32 ULaserBeamComponent::DebugBeam = 0;
+FAutoConsoleVariableRef ConVarDebugFocusTracer(TEXT("LaserBeam.DebugBeam"), ULaserBeamComponent::DebugBeam, TEXT("Draw debug line"), ECVF_Cheat);
+
 void ULaserBeamComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	FHitResult Hit;
-	FVector dest = GetForwardVector() * MaxRayTraceDistance + GetComponentLocation();
+	FVector beamDestination = GetForwardVector() * MaxRayTraceDistance + GetComponentLocation();
 	FCollisionQueryParams TraceParams;
 	//bool isHit = ActorLineTraceSingle(Hit, GetActorLocation(), dest, CollisionChannel, TraceParams);
-	bool isHit = GetWorld()->LineTraceSingleByChannel(Hit, GetComponentLocation(), dest, CollisionChannel);
-	UE_LOG(LogTemp, Error, TEXT("AAAAA"));
-	DrawDebugLine(GetWorld(), GetComponentLocation(), dest, FColor::Red, false, 2);
+	bool isHit = GetWorld()->LineTraceSingleByChannel(Hit, GetComponentLocation(), beamDestination, CollisionChannel);
 
 	if (isHit)
 	{	
 		if (Hit.GetActor()->GetClass()->ImplementsInterface(UHitableByLaser::StaticClass()))
 		{
-			IHitableByLaser::Execute_Hit(Hit.GetActor());
+			IHitableByLaser::Execute_Hit(Hit.GetActor(), Hit, this);
 		}
-		ImpactReaction(GetComponentLocation(), Hit.ImpactPoint);
+		ImpactReaction(Hit);
 	}
+
+#if WITH_EDITOR
+	if (DebugBeam == 1)
+	{
+		if (isHit)
+		{
+			beamDestination = Hit.ImpactPoint;
+		}
+		DebugBeamAction(GetComponentLocation(), beamDestination);
+	}
+#endif
+
+}
+
+void ULaserBeamComponent::DebugBeamAction_Implementation(const FVector& source, const FVector& destination, FColor color)
+{
+	DrawDebugLine(GetWorld(), source, destination, color, false, 0);
 }
 
 // Called when the game starts or when spawned
@@ -69,6 +87,11 @@ ULaserBeamComponent::ULaserBeamComponent()
 {
 	//PrimaryComponentTick.bCanEverTick = false;
 	//PrimaryComponentTick.bStartWithTickEnabled = true;
+#if WITH_EDITOR
+		bTickInEditor = true;
+		PrimaryComponentTick.bCanEverTick = true;
+		PrimaryComponentTick.bStartWithTickEnabled = true;
+#endif
 }
 
 void ULaserBeamComponent::TurnOff()
