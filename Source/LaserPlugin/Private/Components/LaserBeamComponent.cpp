@@ -23,16 +23,14 @@ void ULaserBeamComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		{
 			IHitableByLaser::Execute_Hit(Hit.GetActor(), Hit, this);
 		}
-		ImpactReaction(Hit);
+		beamDestination = Hit.ImpactPoint;
 	}
+	Draw(Hit, GetComponentLocation(), beamDestination);
+
 
 #if WITH_EDITOR
 	if (DebugBeam == 1)
 	{
-		if (isHit)
-		{
-			beamDestination = Hit.ImpactPoint;
-		}
 		DebugBeamAction(GetComponentLocation(), beamDestination);
 	}
 #endif
@@ -104,7 +102,7 @@ void ULaserBeamComponent::TurnOn()
 	CurrentlyActive = true;
 }
 
-void ULaserBeamComponent::Shoot()
+void ULaserBeamComponent::Shoot_Implementation()
 {
 	//Play audio or something
 	TurnOn();

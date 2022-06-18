@@ -45,25 +45,27 @@ public:
 	* @BRIEF Turn off the laser without animations.
 	*/
 	UFUNCTION(BlueprintCallable)
-		virtual void TurnOff();
+	void TurnOff();
 
 	/**
 	* @BRIEF Turn on the laser without animations.
 	*/
 	UFUNCTION(BlueprintCallable)
-		virtual void TurnOn();
+	void TurnOn();
 
 	/**
 	* @BRIEF Called when starts off and turn on with sounds and animations.
 	*
 	* @see TurnOn
 	*/
-	UFUNCTION(BlueprintCallable)
-	virtual void Shoot();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Shoot();
+	virtual void Shoot_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void ImpactReaction(const FHitResult& HitInfo);
-	virtual void ImpactReaction_Implementation(const FHitResult& HitInfo) {};
+	void Draw(const FHitResult& HitInfo, const FVector& Source, const FVector& Destination);
+	virtual void Draw_Implementation(const FHitResult& HitInfo, const FVector& Source, const FVector& Destination) {};
+
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void DebugBeamAction(const FVector& source, const FVector& destination, FColor color = FColor::Red);
